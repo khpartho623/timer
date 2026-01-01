@@ -1,394 +1,355 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reverse Timer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <title>Habit Tracker 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --bg-color: #e6e6fa; /* Light Lavender from your image */
-            --main-text-color: #333; /* Darker for readability */
-            --header-text-color: #8a2be2; /* BlueViolet for header */
-            --button-base-color: #8a2be2; /* BlueViolet for buttons */
-            --button-text-color: #fff;
-            --button-hover-color: #6a0dad; /* Darker purple on hover */
-            --timer-numbers-color: black; /* Specific black for numbers */
-
-            /* Glossy specific colors/shadows for depth (optional, can be removed for flatter look) */
-            --glossy-light: rgba(255, 255, 255, 0.4); /* Top-left highlight */
-            --glossy-dark: rgba(0, 0, 0, 0.2); /* Bottom-right shadow */
-            --inner-shadow-dark: rgba(0, 0, 0, 0.2);
-            --inner-shadow-light: rgba(255, 255, 255, 0.2);
-            --deep-shadow: rgba(0, 0, 0, 0.3); /* For the 'back' shadow */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0f172a; 
+            overscroll-behavior-y: contain;
         }
-
-        body {
+        .habit-card {
+            background: #1e293b;
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border: 1px solid #334155;
+        }
+        .days-scroll {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: var(--bg-color);
-            font-family:'Proxima Nova', Proxima Nova;
-            color: var(--main-text-color);
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-            background-image: radial-gradient(circle at center, #f0f0ff, var(--bg-color)); /* Subtle background gradient */
+            overflow-x: auto;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            scrollbar-width: none;
         }
-
-        .countdown-container {
-            background-color: rgba(255, 255, 255, 0.7); /* Slightly translucent white background for the container itself */
-            backdrop-filter: blur(5px); /* Soft blur effect */
-            border-radius: 20px;
-            padding: 40px 60px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 15px 40px var(--deep-shadow); /* Layered shadows for depth */
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.5); /* Soft border */
-            animation: fadeIn 1.5s ease-out;
-            width: 100%;
-            max-width: 700px; /* Adjust max width as needed */
-            box-sizing: border-box;
-            position: relative; /* For pseudo-elements or other positioning */
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 30px;
-            color: var(--header-text-color);
-            text-shadow: 0 0 8px rgba(138, 43, 226, 0.4); /* Subtle glow */
-            font-weight: 700;
-        }
-
-        .countdown {
-            display: flex;
-            gap: 25px;
-            justify-content: center;
-            margin-bottom: 40px; /* Space below the timer */
-        }
-
-        .time-segment {
-            background: linear-gradient(145deg, rgba(255,255,255,0.8), rgba(240,240,255,0.7)); /* Soft gradient for segment background */
-            border-radius: 15px; /* Slightly more rounded */
-            padding: 20px 25px;
-            min-width: 120px;
-            box-shadow: inset 2px 2px 5px var(--inner-shadow-dark), inset -2px -2px 5px var(--inner-shadow-light),
-                        3px 3px 8px var(--glossy-dark); /* Inner and outer shadow */
-            border: 1px solid rgba(255, 255, 255, 0.6); /* Defined border */
-            position: relative;
-            overflow: hidden;
-            /* No pulse animation as per image look */
-        }
-
-        /* Glossy highlight effect for segments */
-        .time-segment::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                to top left,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.3) 50%, /* Stronger highlight */
-                rgba(255, 255, 255, 0) 100%
-            );
-            border-radius: 15px;
-            opacity: 0.6;
-            pointer-events: none;
-        }
-
-        .value {
-            font-size: 4.5em;
-            font-weight: 900; /* Extra bold */
-            color: var(--timer-numbers-color); /* Black numbers */
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* Subtle text shadow for depth */
-            position: relative;
-            z-index: 2; /* Ensure number is above glossy effect */
-        }
-
-        .label {
-            font-size: 1.2em;
-            margin-top: 5px;
-            color: var(--main-text-color);
-            position: relative;
-            z-index: 2;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .input-container {
-            margin-top: 40px;
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 30px; /* Space between inputs and buttons */
-        }
-
-        .input-group {
+        .days-scroll::-webkit-scrollbar { display: none; }
+        .day-box {
+            min-width: 45px;
+            height: 60px;
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-
-        .input-group label {
-            margin-bottom: 5px;
-            font-size: 1em;
-            color: var(--main-text-color);
-            font-weight: 700;
-        }
-
-        .input-group input {
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            background-color: #f0f0f0; /* Light background for inputs */
-            color: var(--main-text-color);
-            font-family: 'Proxima Nova', Proxima Nova;
-            font-size: 1.1em;
-            width: 80px;
-            text-align: center;
-            outline: none;
-            transition: all 0.3s ease;
-            box-shadow: inset 1px 1px 3px var(--inner-shadow-dark), inset -1px -1px 3px var(--inner-shadow-light); /* Inner shadow for inputs */
-        }
-
-        .input-group input:focus {
-            border-color: var(--button-base-color);
-            box-shadow: inset 1px 1px 3px var(--inner-shadow-dark), inset -1px -1px 3px var(--inner-shadow-light),
-                        0 0 0 3px rgba(138, 43, 226, 0.3); /* Purple glow on focus */
-        }
-
-        .btn-start, .btn-reset {
-            padding: 12px 25px;
-            border-radius: 10px; /* Rounded buttons */
-            border: none;
-            font-family: 'Proxima Nova', Proxima Nova;
-            font-size: 1.1em;
+            justify-content: center;
+            border-radius: 0.5rem;
+            background: #0f172a;
+            border: 1px solid #334155;
+            transition: all 0.2s;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 0 10px; /* Space between buttons */
-            text-transform: uppercase;
-            font-weight: 700;
-            color: var(--button-text-color);
-            background: linear-gradient(145deg, var(--button-base-color), var(--button-hover-color)); /* Glossy gradient */
-            box-shadow: 3px 3px 8px var(--glossy-dark), -3px -3px 8px var(--glossy-light); /* Outer shadow */
-            position: relative; /* For glossy highlight */
-            overflow: hidden;
         }
-
-        .btn-start:hover, .btn-reset:hover {
-            background: linear-gradient(145deg, var(--button-hover-color), var(--button-base-color)); /* Reverse gradient on hover */
-            transform: translateY(-2px);
-            box-shadow: 5px 5px 12px var(--glossy-dark), -5px -5px 12px var(--glossy-light); /* More pronounced shadow */
+        .day-box.checked {
+            background: #059669;
+            border-color: #10b981;
+            color: white;
         }
-
-        .btn-start:active, .btn-reset:active {
-            transform: translateY(0);
-            box-shadow: inset 2px 2px 5px var(--glossy-dark), inset -2px -2px 5px var(--glossy-light); /* Press in effect */
+        .day-box.today { border: 2px solid #3b82f6; }
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
         }
-
-        /* Glossy highlight for buttons */
-        .btn-start::before, .btn-reset::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                to top left,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.3) 50%,
-                rgba(255, 255, 255, 0) 100%
-            );
-            border-radius: 10px;
-            opacity: 0.6;
-            pointer-events: none;
-            transition: all 0.3s ease;
-        }
-        .btn-start:hover::before, .btn-reset:hover::before {
-            opacity: 0.8;
-        }
-
-
-        @media (max-width: 768px) {
-            .countdown-container {
-                padding: 30px 40px;
-            }
-            h1 {
-                font-size: 2em;
-            }
-            .countdown {
-                flex-direction: column;
-                gap: 15px;
-            }
-            .time-segment {
-                min-width: unset;
-                width: 180px;
-                margin: 0 auto;
-                padding: 15px 20px;
-            }
-            .value {
-                font-size: 3.5em;
-            }
-            .label {
-                font-size: 1em;
-            }
-            .input-container {
-                flex-direction: column;
-                align-items: center;
-                gap: 10px;
-            }
-            .btn-start, .btn-reset {
-                width: 80%;
-                margin: 10px auto;
-            }
-            .btn-reset {
-                margin-left: auto; /* Reset margin-left for better stacking */
-            }
-        }
+        @media (min-width: 768px) { .max-w-mobile { max-width: 480px; margin: 0 auto; } }
     </style>
 </head>
-<body>
-    <div class="countdown-container">
-        <h1>Reverse Countdown</h1>
-        <div class="countdown">
-            <div class="time-segment">
-                <div class="value" id="hours">00</div>
-                <div class="label">Hours</div>
-            </div>
-            <div class="time-segment">
-                <div class="value" id="minutes">00</div>
-                <div class="label">Minutes</div>
-            </div>
-            <div class="time-segment">
-                <div class="value" id="seconds">00</div>
-                <div class="label">Seconds</div>
-            </div>
-        </div>
+<body class="text-slate-200 pb-20">
 
-        <div class="input-container">
-            <div class="input-group">
-                <label for="inputHours">Hours:</label>
-                <input type="number" id="inputHours" min="0" value="0">
-            </div>
-            <div class="input-group">
-                <label for="inputMinutes">Minutes:</label>
-                <input type="number" id="inputMinutes" min="0" max="59" value="0">
-            </div>
-            <div class="input-group">
-                <label for="inputSeconds">Seconds:</label>
-                <input type="number" id="inputSeconds" min="0" max="59" value="0">
-            </div>
-        </div>
-
-        <div>
-            <button class="btn-start" id="startButton">Start Countdown</button>
-            <button class="btn-reset" id="resetButton">Reset</button>
-      </div>
-      
-   <footer><br>
-  <div class="copyright">
- <div class="container">
-                <p>&copy; 2025. All Rights Reserved. Powered by KH Partho.</p>
-  </div>
+    <!-- Loading State -->
+    <div id="loader" class="loading-overlay hidden">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
     </div>
-    </footer> 
-      
-  </div>
-  
-  <script>
-        const hoursDisplay = document.getElementById('hours');
-        const minutesDisplay = document.getElementById('minutes');
-        const secondsDisplay = document.getElementById('seconds');
 
-        const inputHours = document.getElementById('inputHours');
-        const inputMinutes = document.getElementById('inputMinutes');
-        const inputSeconds = document.getElementById('inputSeconds');
+    <div class="max-w-mobile p-4">
+        <!-- App Header with Auth -->
+        <div class="mb-6 flex flex-col items-center">
+            <div class="w-full flex justify-between items-center mb-4">
+                <h1 class="text-2xl font-bold text-white uppercase tracking-widest">Habit Tracker</h1>
+                <button id="authBtn" class="bg-slate-800 hover:bg-slate-700 text-xs font-bold py-2 px-4 rounded-xl border border-slate-700 transition-all">
+                    Login
+                </button>
+            </div>
+            
+            <div id="userInfo" class="hidden mb-4 flex items-center gap-2 text-xs text-slate-400">
+                <span id="userEmail"></span>
+                <span class="text-emerald-500">• Online</span>
+            </div>
 
-        const startButton = document.getElementById('startButton');
-        const resetButton = document.getElementById('resetButton');
+            <!-- Month Controls -->
+            <div class="w-full flex items-center justify-between bg-slate-800/50 p-3 rounded-2xl border border-slate-700">
+                <button id="prevMonth" class="p-2 hover:bg-slate-700 rounded-xl transition-colors text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                <h2 id="currentMonthDisplay" class="text-lg font-bold text-white uppercase tracking-tight">January 2026</h2>
+                <button id="nextMonth" class="p-2 hover:bg-slate-700 rounded-xl transition-colors text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+            </div>
+        </div>
 
-        let countdownInterval;
-        let totalSeconds;
+        <!-- Habits List -->
+        <div id="habitContainer"></div>
 
-        function formatTime(time) {
-            return time < 10 ? `0${time}` : time;
+        <!-- Progress Stats -->
+        <div class="mt-8 mb-6">
+            <h3 class="text-lg font-bold text-white mb-4 px-1">Detailed Progress 📊</h3>
+            <div class="space-y-3">
+                <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm text-slate-400 font-semibold uppercase">Daily (Today)</span>
+                        <span id="dailyCount" class="text-emerald-400 font-bold">0/10</span>
+                    </div>
+                    <div class="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+                        <div id="dailyBar" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm text-slate-400 font-semibold uppercase">Weekly Progress</span>
+                        <span id="weeklyCount" class="text-sky-400 font-bold">0/70</span>
+                    </div>
+                    <div class="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+                        <div id="weeklyBar" class="bg-sky-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm text-slate-400 font-semibold uppercase">Monthly Goal</span>
+                        <span id="monthlyCount" class="text-purple-400 font-bold">0/310</span>
+                    </div>
+                    <div class="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+                        <div id="monthlyBar" class="bg-purple-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global environment variables provided by system
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'habit-tracker-2026';
+        const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // App State
+        let currentUser = null;
+        let trackerData = {};
+        let currentYear = 2026;
+        let currentMonth = 0;
+
+        const habits = [
+            { id: 1, name: "Wakeup early ⏰" },
+            { id: 2, name: "Home workout 🏋️" },
+            { id: 3, name: "Cold water bath 🚿" },
+            { id: 4, name: "Save money 💰" },
+            { id: 5, name: "Listen broadcast 💭" },
+            { id: 6, name: "Stay positive ✅" },
+            { id: 7, name: "No porn ❌" },
+            { id: 8, name: "No fastfood 🍔" },
+            { id: 9, name: "Namaz 🕋" },
+            { id: 10, name: "Study 📚" }
+        ];
+
+        const daysOfWeekShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+        // Auth Logic
+        async function initAuth() {
+            try {
+                if (initialToken) {
+                    await signInWithCustomToken(auth, initialToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Auth error:", error);
+            }
         }
 
-        function updateCountdown() {
-            if (totalSeconds < 0) {
-                clearInterval(countdownInterval);
-                alert("Countdown Finished!");
-                resetClock();
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                document.getElementById('authBtn').innerText = 'Logout';
+                document.getElementById('userInfo').classList.remove('hidden');
+                document.getElementById('userEmail').innerText = user.isAnonymous ? 'Guest User' : user.uid.substring(0, 8);
+                syncWithCloud();
+            } else {
+                document.getElementById('authBtn').innerText = 'Login';
+                document.getElementById('userInfo').classList.add('hidden');
+                trackerData = JSON.parse(localStorage.getItem('habitTrackerApp')) || {};
+                renderHabits();
+            }
+        });
+
+        document.getElementById('authBtn').onclick = async () => {
+            if (currentUser) {
+                await signOut(auth);
+            } else {
+                initAuth();
+            }
+        };
+
+        // Cloud Sync Logic
+        function syncWithCloud() {
+            if (!currentUser) return;
+            
+            const userDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'data', 'habits');
+            
+            // Listen for changes from cloud
+            onSnapshot(userDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    trackerData = docSnap.data();
+                    localStorage.setItem('habitTrackerApp', JSON.stringify(trackerData));
+                    renderHabits();
+                }
+            }, (error) => console.error("Firestore Error:", error));
+        }
+
+        async function saveToCloud() {
+            if (!currentUser) {
+                localStorage.setItem('habitTrackerApp', JSON.stringify(trackerData));
                 return;
             }
-
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-
-            hoursDisplay.textContent = formatTime(hours);
-            minutesDisplay.textContent = formatTime(minutes);
-            secondsDisplay.textContent = formatTime(seconds);
-
-            totalSeconds--;
-        }
-
-        function startCountdown() {
-            clearInterval(countdownInterval); // Clear any existing interval
-
-            const h = parseInt(inputHours.value) || 0;
-            const m = parseInt(inputMinutes.value) || 0;
-            const s = parseInt(inputSeconds.value) || 0;
-
-            totalSeconds = (h * 3600) + (m * 60) + s;
-
-            if (totalSeconds <= 0) {
-                alert("Please enter a valid time to start the countdown.");
-                return;
+            
+            const userDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'data', 'habits');
+            try {
+                await setDoc(userDocRef, trackerData, { merge: true });
+            } catch (error) {
+                console.error("Error saving to cloud:", error);
             }
-
-            updateCountdown(); // Call immediately to show initial time
-            countdownInterval = setInterval(updateCountdown, 1000);
-            startButton.textContent = "Running...";
-            startButton.disabled = true;
-            // Disable inputs once countdown starts
-            inputHours.disabled = true;
-            inputMinutes.disabled = true;
-            inputSeconds.disabled = true;
         }
 
-        function resetClock() {
-            clearInterval(countdownInterval);
-            hoursDisplay.textContent = '00';
-            minutesDisplay.textContent = '00';
-            secondsDisplay.textContent = '00';
-            inputHours.value = '0';
-            inputMinutes.value = '0';
-            inputSeconds.value = '0';
-            startButton.textContent = "Start Countdown";
-            startButton.disabled = false;
-            // Enable inputs on reset
-            inputHours.disabled = false;
-            inputMinutes.disabled = false;
-            inputSeconds.disabled = false;
+        // UI Logic
+        function getDaysInMonth(month, year) {
+            return new Date(year, month + 1, 0).getDate();
         }
 
-        startButton.addEventListener('click', startCountdown);
-        resetButton.addEventListener('click', resetClock);
+        function renderHabits() {
+            const container = document.getElementById('habitContainer');
+            const monthDisplay = document.getElementById('currentMonthDisplay');
+            const daysCount = getDaysInMonth(currentMonth, currentYear);
+            
+            monthDisplay.innerText = `${months[currentMonth]} ${currentYear}`;
+            container.innerHTML = '';
 
-        // Initial reset on page load
-        resetClock();
-      
+            habits.forEach(habit => {
+                const card = document.createElement('div');
+                card.className = 'habit-card';
+                
+                let doneInMonth = 0;
+                for(let d=1; d<=daysCount; d++) {
+                    if(trackerData[`${currentYear}-${currentMonth}-${habit.id}-${d}`]) doneInMonth++;
+                }
+                const progress = ((doneInMonth / daysCount) * 100).toFixed(0);
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-slate-100">${habit.name}</h3>
+                        <span class="text-xs font-bold px-2 py-1 bg-slate-700 rounded-lg text-emerald-400">${progress}%</span>
+                    </div>
+                    <div class="days-scroll" id="scroll-${habit.id}"></div>
+                `;
+
+                container.appendChild(card);
+                const scrollArea = card.querySelector(`#scroll-${habit.id}`);
+
+                for (let d = 1; d <= daysCount; d++) {
+                    const dateObj = new Date(currentYear, currentMonth, d);
+                    const dayName = daysOfWeekShort[dateObj.getDay()];
+                    const key = `${currentYear}-${currentMonth}-${habit.id}-${d}`;
+                    
+                    const dayBox = document.createElement('div');
+                    const isChecked = trackerData[key];
+                    const isToday = new Date().toDateString() === dateObj.toDateString();
+
+                    dayBox.className = `day-box ${isChecked ? 'checked' : ''} ${isToday ? 'today' : ''}`;
+                    dayBox.innerHTML = `
+                        <span class="text-[10px] uppercase opacity-60">${dayName}</span>
+                        <span class="text-sm font-bold">${d}</span>
+                    `;
+                    
+                    dayBox.onclick = async () => {
+                        trackerData[key] = !trackerData[key];
+                        renderHabits(); // UI update first
+                        await saveToCloud();
+                    };
+
+                    scrollArea.appendChild(dayBox);
+                }
+            });
+
+            updateProgressBars();
+        }
+
+        function updateProgressBars() {
+            const now = new Date();
+            const today = now.getDate();
+            const daysInMonth = getDaysInMonth(currentMonth, currentYear);
+            
+            // Daily
+            let dailyDone = 0;
+            habits.forEach(h => {
+                if(trackerData[`${currentYear}-${currentMonth}-${h.id}-${today}`]) dailyDone++;
+            });
+            document.getElementById('dailyCount').innerText = `${dailyDone}/${habits.length}`;
+            document.getElementById('dailyBar').style.width = (dailyDone/habits.length * 100) + '%';
+
+            // Weekly
+            const currentDayOfWeek = now.getDay();
+            let weeklyDone = 0;
+            let startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - currentDayOfWeek);
+            
+            for(let i=0; i<7; i++) {
+                let d = new Date(startOfWeek);
+                d.setDate(startOfWeek.getDate() + i);
+                habits.forEach(h => {
+                    if(trackerData[`${d.getFullYear()}-${d.getMonth()}-${h.id}-${d.getDate()}`]) weeklyDone++;
+                });
+            }
+            document.getElementById('weeklyCount').innerText = `${weeklyDone}/${habits.length * 7}`;
+            document.getElementById('weeklyBar').style.width = (weeklyDone/(habits.length * 7) * 100) + '%';
+
+            // Monthly
+            let monthlyDone = 0;
+            for(let d=1; d<=daysInMonth; d++) {
+                habits.forEach(h => {
+                    if(trackerData[`${currentYear}-${currentMonth}-${h.id}-${d}`]) monthlyDone++;
+                });
+            }
+            document.getElementById('monthlyCount').innerText = `${monthlyDone}/${habits.length * daysInMonth}`;
+            document.getElementById('monthlyBar').style.width = (monthlyDone/(habits.length * daysInMonth) * 100) + '%';
+        }
+
+        document.getElementById('prevMonth').onclick = () => {
+            currentMonth--;
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            renderHabits();
+        };
+
+        document.getElementById('nextMonth').onclick = () => {
+            currentMonth++;
+            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            renderHabits();
+        };
+
+        // Start
+        renderHabits();
     </script>
 </body>
 </html>
