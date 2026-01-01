@@ -136,21 +136,18 @@
         import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot, collection, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global environment variables provided by system
         const firebaseConfig = JSON.parse(__firebase_config);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'habit-tracker-2026';
         const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // App State
         let currentUser = null;
-        let trackerData = {};
-        let currentYear = 2026;
-        let currentMonth = 0;
+        let trackerData = JSON.parse(localStorage.getItem('habitTrackerApp')) || {};
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth();
 
         const habits = [
             { id: 1, name: "Wakeup early ⏰" },
@@ -168,7 +165,7 @@
         const daysOfWeekShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-        // Auth Logic
+        // Auth Logic - Correcting the rule 3 flow
         async function initAuth() {
             try {
                 if (initialToken) {
@@ -191,7 +188,6 @@
             } else {
                 document.getElementById('authBtn').innerText = 'Login';
                 document.getElementById('userInfo').classList.add('hidden');
-                trackerData = JSON.parse(localStorage.getItem('habitTrackerApp')) || {};
                 renderHabits();
             }
         });
@@ -200,24 +196,22 @@
             if (currentUser) {
                 await signOut(auth);
             } else {
-                initAuth();
+                await initAuth();
             }
         };
 
-        // Cloud Sync Logic
+        // Sync with Firestore
         function syncWithCloud() {
             if (!currentUser) return;
-            
             const userDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'data', 'habits');
             
-            // Listen for changes from cloud
             onSnapshot(userDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     trackerData = docSnap.data();
                     localStorage.setItem('habitTrackerApp', JSON.stringify(trackerData));
                     renderHabits();
                 }
-            }, (error) => console.error("Firestore Error:", error));
+            }, (error) => console.error("Firestore Listen Error:", error));
         }
 
         async function saveToCloud() {
@@ -225,22 +219,22 @@
                 localStorage.setItem('habitTrackerApp', JSON.stringify(trackerData));
                 return;
             }
-            
             const userDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'data', 'habits');
             try {
-                await setDoc(userDocRef, trackerData, { merge: true });
+                await setDoc(userDocRef, trackerData);
             } catch (error) {
-                console.error("Error saving to cloud:", error);
+                console.error("Cloud Save Error:", error);
             }
         }
 
-        // UI Logic
         function getDaysInMonth(month, year) {
             return new Date(year, month + 1, 0).getDate();
         }
 
         function renderHabits() {
             const container = document.getElementById('habitContainer');
+            if (!container) return;
+
             const monthDisplay = document.getElementById('currentMonthDisplay');
             const daysCount = getDaysInMonth(currentMonth, currentYear);
             
@@ -274,7 +268,7 @@
                     const key = `${currentYear}-${currentMonth}-${habit.id}-${d}`;
                     
                     const dayBox = document.createElement('div');
-                    const isChecked = trackerData[key];
+                    const isChecked = trackerData[key] === true;
                     const isToday = new Date().toDateString() === dateObj.toDateString();
 
                     dayBox.className = `day-box ${isChecked ? 'checked' : ''} ${isToday ? 'today' : ''}`;
@@ -284,8 +278,8 @@
                     `;
                     
                     dayBox.onclick = async () => {
-                        trackerData[key] = !trackerData[key];
-                        renderHabits(); // UI update first
+                        trackerData[key] = !isChecked;
+                        renderHabits(); // Immediate UI update
                         await saveToCloud();
                     };
 
@@ -299,12 +293,14 @@
         function updateProgressBars() {
             const now = new Date();
             const today = now.getDate();
+            const todayMonth = now.getMonth();
+            const todayYear = now.getFullYear();
             const daysInMonth = getDaysInMonth(currentMonth, currentYear);
             
             // Daily
             let dailyDone = 0;
             habits.forEach(h => {
-                if(trackerData[`${currentYear}-${currentMonth}-${h.id}-${today}`]) dailyDone++;
+                if(trackerData[`${todayYear}-${todayMonth}-${h.id}-${today}`]) dailyDone++;
             });
             document.getElementById('dailyCount').innerText = `${dailyDone}/${habits.length}`;
             document.getElementById('dailyBar').style.width = (dailyDone/habits.length * 100) + '%';
@@ -348,8 +344,15 @@
             renderHabits();
         };
 
-        // Start
-        renderHabits();
+        // Initial Start
+        window.onload = () => {
+            renderHabits();
+            // Start Auth only if requested via Login or if already signed in session
+            if (localStorage.getItem('habitTrackerApp')) {
+                // Pre-render local data while waiting for auth
+                renderHabits();
+            }
+        };
     </script>
 </body>
 </html>
